@@ -33,11 +33,12 @@ public class Edge {
     }
 
     public double getWeight() { return weight; }
+
     public int hashCode() {
         return dest * 23 + source * 41;
     }
 
     public String toString() {
-        return String.format("Graph.Edge {from: %d, to: %d, weight: %f}", source, dest, weight);
+        return String.format("Graph.Edge { from: %d, to: %d, weight: %f }", source, dest, weight);
     }
 }

@@ -1,8 +1,7 @@
 package collection.graphs;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class ListGraph extends AbstractGraph {
     private List<Edge>[] edges;
@@ -41,5 +40,133 @@ public class ListGraph extends AbstractGraph {
     @Override
     public Iterator<Edge> edgeIterator(int source) {
         return edges[source].iterator();
+    }
+
+    @SuppressWarnings("all")
+    public Iterator<Integer> DijkstraMaxWeight(int startNode, double totalWeight) {
+        double[] distance = new double[edges.length];
+        IntStream.range(0, distance.length).forEach(i -> distance[i] = Double.POSITIVE_INFINITY);
+        distance[startNode] = 0;
+
+        PriorityQueue<Edge> edgeQueue = new PriorityQueue<>((a, b) -> (int) Math.signum(a.getWeight() - b.getWeight()));
+
+        int visitedCount = 1;
+
+        edges[startNode].forEach(edgeQueue::add);
+        while (!edgeQueue.isEmpty() && visitedCount++ != edges.length) {
+            Edge edge = edgeQueue.poll();
+
+            if (distance[edge.getDest()] == Double.POSITIVE_INFINITY)
+                edges[edge.getDest()].forEach(edgeQueue::add);
+
+            double newDistance = distance[edge.getSource()] + edge.getWeight();
+
+            if (newDistance < distance[edge.getDest()])
+                if (newDistance > totalWeight)
+                    newDistance = -1;
+
+            distance[edge.getDest()] = newDistance;
+        }
+
+        return IntStream
+                .range(0, edges.length)
+                .map(i -> distance[i] == -1 || distance[i] == Double.POSITIVE_INFINITY ? -1 : i)
+                .filter(i -> i != -1)
+                .iterator();
+    }
+
+    public Iterator<Edge> minimumSpanningTree() {
+        AdaptedQueue<QueueElement> nodes = new AdaptedQueue<>((a, b) -> (int) Math.signum(a.cost - b.cost));
+        double[] cost = new double[edges.length];
+        boolean[] known = new boolean[edges.length];
+        int[] parent = new int[edges.length];
+
+        IntStream.range(0, edges.length).forEach(i -> cost[i] = Double.POSITIVE_INFINITY);
+
+        int start = new Random().nextInt(edges.length);
+        nodes.push(new QueueElement(start, 0));
+        cost[start] = 0;
+        parent[start] = -1;
+        known[start] = true;
+
+        while (!nodes.isEmpty()) {
+            QueueElement currentNode = nodes.poll();
+
+            edges[currentNode.id].forEach(edge -> {
+                double newCost = cost[currentNode.id] + edge.getWeight();
+
+                if (newCost < cost[edge.getDest()]) {
+                    if (!known[edge.getDest()]) {
+                        nodes.push(new QueueElement(edge.getDest(), newCost));
+                        known[edge.getDest()] = true;
+                    }
+                    parent[edge.getDest()] = edge.getSource();
+                    cost[edge.getDest()] = newCost;
+                    nodes.requestUpdate(nodes.find(0, new QueueElement(edge.getDest(), 0)));
+                }
+
+            });
+        }
+
+        // TODO failed at Prim :(
+        return null;
+    }
+
+    @SuppressWarnings("all")
+    public ListIterator<Edge>[] dijkstra(int fromNode) {
+        int size = edges.length;
+        int[] prev = new int[size];
+        double[] cost = new double[size];
+        boolean[] visited = new boolean[size];
+        PriorityQueue<QueueElement> queue = new PriorityQueue<>((a, b) -> (int) Math.signum(a.cost - b.cost));
+
+        Arrays.fill(prev, -1);
+        Arrays.fill(cost, Double.POSITIVE_INFINITY);
+
+        cost[fromNode] = 0;
+        queue.add(new QueueElement(fromNode, cost[fromNode]));
+
+        while (!queue.isEmpty()) {
+            final int from = queue.poll().id;
+            if (visited[from])
+                continue;
+
+            visited[from] = true;
+
+            edges[from].forEach(edge -> {
+                int to = edge.getDest();
+                double newWeight = cost[from] + edge.getWeight();
+                if (newWeight < cost[to]) {
+                    prev[to] = from;
+                    cost[to] = newWeight;
+                    queue.add(new QueueElement(to, newWeight));
+                }
+            });
+        }
+
+        ListIterator<Edge>[] result = new ListIterator[size];
+
+        IntStream.range(0, size).forEach(i -> {
+            LinkedList<Edge> edges = new LinkedList<>();
+            int pos = i;
+            while (prev[pos] != -1) {
+                edges.add(new Edge(prev[pos], pos));
+                pos = prev[pos];
+            }
+
+            result[i] = edges.listIterator(edges.size());
+        });
+
+        return result;
+    }
+
+    private class QueueElement {
+        private int id;
+        private double cost;
+
+        public QueueElement(int id, double cost) {
+            this.id = id;
+            this.cost = cost;
+        }
     }
 }

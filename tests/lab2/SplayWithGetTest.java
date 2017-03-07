@@ -41,7 +41,7 @@ public class SplayWithGetTest {
     @Test
     public void splay() throws Exception {
         tree.add(22);
-        //randomInts(50, 50, 34621);
+        //randomIntsList(50, 50, 34621);
         randomInts(100, 500);
         tree.get(22);
         assertTrue(tree.getFirst() == 22);

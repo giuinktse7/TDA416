@@ -1,60 +1,49 @@
 package collection.sorting;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class HeapSort {
-
-    private static int endIndex;
-
     public static void main(String[] args) {
-        int[] array = new int[10];
-        List<Integer> ints = SorterUtils.randomInts(10, 0, 100, 5371);
-        IntStream.range(0, 10).forEach(i -> array[i] = ints.get(i));
-        new HeapSort().sort(array);
+        int[] array = SorterUtils.randomInts(10, 0, 100);
 
-        Arrays.stream(array).forEach(System.out::println);
+        SorterUtils.printArray(array);
+
+        heapsort(array);
+
+        System.out.println();
+        System.out.println();
+        SorterUtils.printArray(array);
     }
 
-    private void sort(int[] array) {
-        makeHeap(array);
+    private static void swap(int[] array, int a, int b) {
+        int temp = array[a];
+        array[a] = array[b];
+        array[b] = temp;
+    }
 
-        for (int i = endIndex; i > 0; --i) {
+    private static void heapify(int[] array, int parent, int size) {
+        int next = IntStream.of(parent * 2 + 1, parent * 2 + 2)
+                .reduce(parent, (result, index) -> index <= size && array[index] > array[result] ? index : result);
+
+        if (next != parent) {
+            swap(array, next, parent);
+            heapify(array, next, size);
+        }
+    }
+
+    private static void heapsort(int[] array) {
+        int end = array.length - 1;
+        descendingInts(end / 2).forEach(i -> heapify(array, i, end));
+
+        descendingInts(end).forEach(i -> {
             swap(array, 0, i);
-            --endIndex;
-            cascade(array, 0);
-        }
+            heapify(array, 0, i - 1);
+        });
     }
 
-    private void makeHeap(int[] array) {
-        endIndex = array.length - 1;
-
-        for (int i = endIndex / 2; i >= 0; --i)
-            cascade(array, i);
+    private static Stream<Integer> descendingInts(int startInclusive) {
+        int[] v = { startInclusive };
+        return Stream.generate(() -> v[0]--).limit(startInclusive + 1);
     }
-
-    private void cascade(int[] array, int i) {
-        int left = i * 2;
-        int right = left + 1;
-        int max = i;
-        if (left <= endIndex && array[left] > array[i])
-            max = left;
-        if (right <= endIndex && array[right] > array[max])
-            max = right;
-
-        if (max != i) {
-            swap(array, i, max);
-            cascade(array, max);
-        }
-    }
-
-    private static void swap(int arr[], int i, int j) {
-        int tmp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = tmp;
-    }
-
-
-
 }

@@ -1,42 +1,52 @@
 package collection.sorting;
 
 import java.util.List;
+import java.util.Random;
 
 public class QuickSort {
 
     public static void main(String[] args) {
         QuickSort sorter = new QuickSort();
-        List<Integer> list = SorterUtils.randomInts(1000, 0, 1000);
+        List<Integer> list = SorterUtils.randomIntsList(50, 0, 100);
+        /*List<Integer> list = new ArrayList<>();
+        list.add(4);
+        list.add(3);
+        list.add(2);
+        list.add(1);
+        list.add(0);*/
 
         System.out.println("List: " + list);
-        sorter.sort(list);
+        sorter.sort(list, 0, list.size() - 1);
 
         System.out.println("\n");
         System.out.println(list);
     }
 
-    public <E extends Comparable<E>> void sort(List<E> list) {
-        sort(list, 0, list.size() - 1);
-    }
+    private <E extends Comparable<E>> void sort(List<E> list, int from, int to) {
+        if (from >= to)
+            return;
 
-    private <E extends Comparable<E>> void sort(List<E> list, int low, int high) {
-        int i = low, j = high;
+        swap(list, from, getPivotIndex(list, from, to));
+        E pivot = list.get(from);
 
-        E pivot = list.get((low + high) / 2);
+        int low = from + 1;
+        int high = from + 1;
 
-        while (i <= j) {
-            while (list.get(i).compareTo(pivot) < 0) ++i;
-            while (list.get(j).compareTo(pivot) > 0) --j;
+        while (high <= to) {
+            if (list.get(high).compareTo(pivot) < 0)
+                swap(list, low++, high);
 
-            if (i <= j) {
-                swap(list, i, j);
-                ++i;
-                --j;
-            }
+            ++high;
         }
 
-        if (low < j) sort(list, low, j);
-        if (i < high) sort(list, i, high);
+        swap(list, from, low - 1);
+
+        sort(list, from, low - 2);
+        sort(list, low, to);
+    }
+
+    private <E extends Comparable<E>> int getPivotIndex(List<E> list, int from, int to) {
+        return new Random().nextInt(to - from + 1) + from;
     }
 
     private <E> void swap(List<E> list, int a, int b) {
