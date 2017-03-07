@@ -3,6 +3,7 @@ package collection.graphs;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.stream.IntStream;
 
 public class AdaptedQueue<E> {
 
@@ -98,10 +99,13 @@ public class AdaptedQueue<E> {
 
     /** Swap downwards beginning from index */
     private void cascadeDown(int index) {
-        int smallestChild = smallestChild(index);
-        if (smallestChild != -1 && compare(index, smallestChild) > 0) {
-            swap(index, smallestChild);
-            cascadeDown(smallestChild);
+        // Get index of biggest of current, left & right
+        int next = IntStream.of(index, leftChild(index), rightChild(index))
+                .reduce(index, (result, i) -> i < list.size() && compare(i, result) > 0 ? i : result);
+
+        if (next != index) {
+            swap(next, index);
+            cascadeDown(next);
         }
     }
 
@@ -112,19 +116,6 @@ public class AdaptedQueue<E> {
 
         index.put(list.get(first), first);
         index.put(list.get(second), second);
-    }
-
-    private int smallestChild(int index) {
-        //There are no children
-        if (index * 2 + 1 > list.size() - 1)
-            return -1;
-
-        //Only the left child is present
-        if (index * 2 + 2 > list.size() - 1)
-            return leftChild(index);
-
-        boolean leftSmaller = compare(leftChild(index), rightChild(index)) < 0;
-        return leftSmaller ? rightChild(index) : leftChild(index);
     }
 
     private int compare(int firstIndex, int secondIndex) {
