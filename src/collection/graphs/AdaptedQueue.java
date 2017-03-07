@@ -2,11 +2,14 @@ package collection.graphs;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 
 public class AdaptedQueue<E> {
 
     private ArrayList<E> list;
     private Comparator<E> comparator;
+
+    private HashMap<E, Integer> index;
 
     public AdaptedQueue() {
         list = new ArrayList<>();
@@ -14,11 +17,13 @@ public class AdaptedQueue<E> {
 
     public AdaptedQueue(Comparator<E> comparator) {
         list = new ArrayList<>();
+        this.index = new HashMap<>();
         this.comparator = comparator;
     }
 
     public boolean push(E item) {
         list.add(item);
+        index.put(item, list.size() - 1);
         requestUpdate(list.size() - 1);
 
         return true;
@@ -79,6 +84,10 @@ public class AdaptedQueue<E> {
             cascadeUp(index);
     }
 
+    public void requestUpdate(E item) {
+        requestUpdate(index.get(item));
+    }
+
     private void cascadeUp(int index) {
         int parent = parent(index);
         if (parent >= 0 && compare(parent, index) > 0) { //Top bigger
@@ -100,6 +109,9 @@ public class AdaptedQueue<E> {
         E temp = list.get(first);
         list.set(first, list.get(second));
         list.set(second, temp);
+
+        index.put(list.get(first), first);
+        index.put(list.get(second), second);
     }
 
     private int smallestChild(int index) {

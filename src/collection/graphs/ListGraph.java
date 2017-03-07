@@ -75,43 +75,6 @@ public class ListGraph extends AbstractGraph {
                 .iterator();
     }
 
-    public Iterator<Edge> minimumSpanningTree() {
-        AdaptedQueue<QueueElement> nodes = new AdaptedQueue<>((a, b) -> (int) Math.signum(a.cost - b.cost));
-        double[] cost = new double[edges.length];
-        boolean[] known = new boolean[edges.length];
-        int[] parent = new int[edges.length];
-
-        IntStream.range(0, edges.length).forEach(i -> cost[i] = Double.POSITIVE_INFINITY);
-
-        int start = new Random().nextInt(edges.length);
-        nodes.push(new QueueElement(start, 0));
-        cost[start] = 0;
-        parent[start] = -1;
-        known[start] = true;
-
-        while (!nodes.isEmpty()) {
-            QueueElement currentNode = nodes.poll();
-
-            edges[currentNode.id].forEach(edge -> {
-                double newCost = cost[currentNode.id] + edge.getWeight();
-
-                if (newCost < cost[edge.getDest()]) {
-                    if (!known[edge.getDest()]) {
-                        nodes.push(new QueueElement(edge.getDest(), newCost));
-                        known[edge.getDest()] = true;
-                    }
-                    parent[edge.getDest()] = edge.getSource();
-                    cost[edge.getDest()] = newCost;
-                    nodes.requestUpdate(nodes.find(0, new QueueElement(edge.getDest(), 0)));
-                }
-
-            });
-        }
-
-        // TODO failed at Prim :(
-        return null;
-    }
-
     @SuppressWarnings("all")
     public ListIterator<Edge>[] dijkstra(int fromNode) {
         int size = edges.length;
